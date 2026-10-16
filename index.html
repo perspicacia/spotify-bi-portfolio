@@ -101,6 +101,10 @@ ol.qs li::before{content:counter(q,decimal-leading-zero);font-family:var(--mono)
 
 .dist{display:flex;height:44px;border-radius:8px;overflow:hidden;margin:8px 0 14px}
 .dist div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:#06130b;font-weight:500;white-space:nowrap;overflow:hidden}
+.hist{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;height:180px;align-items:end;border-bottom:1px solid var(--line)}
+.hist div{height:100%;display:flex;flex-direction:column;justify-content:flex-end;position:relative}
+.hist span{display:block;border-radius:3px 3px 0 0}
+.hist em{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-style:normal;font-family:var(--mono);font-size:10px;color:var(--dim)}
 .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted)}
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c)}
 
@@ -156,7 +160,7 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
   </div>
   <div class="stats">
     <div><b>114K</b><small>tracks (rows)</small></div>
-    <div><b>89,741</b><small>고유 track_id</small></div>
+    <div><b>89,740</b><small>고유 track_id</small></div>
     <div><b>114</b><small>genres</small></div>
     <div><b>8 + 1</b><small>sheets + dashboard</small></div>
   </div>
@@ -194,7 +198,7 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
   <div class="grid g4">
     <div class="card"><div class="k">Rows</div><div class="big">114,000</div><p>수집 시점 총 트랙 행 수</p></div>
     <div class="card"><div class="k">Columns</div><div class="big">22</div><p>메타 10개 + Audio Feature 12개</p></div>
-    <div class="card"><div class="k">Genres</div><div class="big">114</div><p>장르별 1,000곡 · 대시보드의 기준 차원</p></div>
+    <div class="card"><div class="k">Genres</div><div class="big">114</div><p>장르별 1,000행 · 대시보드의 기준 차원</p></div>
     <div class="card"><div class="k">Audio Features</div><div class="big">12</div><p>Spotify가 제공한 수치형 특성</p></div>
   </div>
   <div class="grid g3" style="margin-top:16px">
@@ -213,13 +217,13 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
     <div><b>Raw Data</b><small>114,000행 · 22컬럼</small></div>
     <div><b>결측치 제거</b><small>1행 (3개 필드) 제거</small></div>
     <div><b>컬럼 정리</b><small>인덱스성 2개 제거</small></div>
-    <div><b>중복 확인</b><small>장르 간 중복 등록 24,259행</small></div>
+    <div><b>중복 확인</b><small>완전 중복 450행 · 장르 간 중복 24,259행</small></div>
     <div><b>Python EDA</b><small>분포 · 장르 · 상관관계</small></div>
     <div><b>Tableau 연결</b><small>KPI · 시트 · 대시보드</small></div>
   </div>
   <div class="grid g2" style="margin-top:16px">
     <div class="card hl"><div class="k">Checkpoint</div><h3>113,999행 · 20개 컬럼 유지</h3><p>데이터 손실은 아주 작았고, 장르 라벨과 Audio Feature 컬럼은 모두 그대로 남겼습니다.</p></div>
-    <div class="card"><div class="k">BI 관점 · 행 수 ≠ 곡 수</div><h3>고유 track_id는 89,741개</h3><p>한 곡이 여러 장르에 등록되어 있어 114,000행 가운데 24,259행이 중복입니다. 이 차이를 KPI 정의 단계에서 먼저 잡아야 “트랙 수”가 부풀지 않습니다.</p></div>
+    <div class="card"><div class="k">BI 관점 · 행 수 ≠ 곡 수</div><h3>고유 track_id는 89,740개</h3><p>한 곡이 여러 장르에 등록되어 있어 113,999행 가운데 24,259행이 같은 곡의 반복입니다. 이 차이를 KPI 정의 단계에서 먼저 잡아야 “트랙 수”가 부풀지 않습니다.</p></div>
   </div>
 </div></section>
 
@@ -233,17 +237,13 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
   <div class="split">
     <div class="chart-card">
       <div class="chart-title"><h3>Popularity 분포</h3><small>0 – 100 점</small></div>
-      <div class="dist">
-        <div style="width:74.2%;background:#1DB954">0–49 · 74.2%</div>
-        <div style="width:24.75%;background:#8fe0aa">50–79</div>
-        <div style="width:1.05%;background:#e9efeb"></div>
-      </div>
-      <div class="legend">
+      <div class="hist"><div title="0점대 · 22,728곡"><span style="height:100.0%;background:#1DB954"></span><em>0</em></div><div title="10점대 · 9,338곡"><span style="height:41.1%;background:#1DB954"></span><em>10</em></div><div title="20점대 · 18,420곡"><span style="height:81.0%;background:#1DB954"></span><em>20</em></div><div title="30점대 · 14,926곡"><span style="height:65.7%;background:#1DB954"></span><em>30</em></div><div title="40점대 · 19,220곡"><span style="height:84.6%;background:#1DB954"></span><em>40</em></div><div title="50점대 · 14,545곡"><span style="height:64.0%;background:#8fe0aa"></span><em>50</em></div><div title="60점대 · 9,350곡"><span style="height:41.1%;background:#8fe0aa"></span><em>60</em></div><div title="70점대 · 4,271곡"><span style="height:18.8%;background:#8fe0aa"></span><em>70</em></div><div title="80점대 · 1,103곡"><span style="height:4.9%;background:#e9efeb"></span><em>80</em></div><div title="90점대 · 96곡"><span style="height:0.6%;background:#e9efeb"></span><em>90</em></div><div title="100점대 · 2곡"><span style="height:0.6%;background:#e9efeb"></span><em>100</em></div></div>
+      <div class="legend" style="margin-top:32px">
         <span style="--c:#1DB954">0–49점 · 74.2%</span>
-        <span style="--c:#8fe0aa">50–79점 · 24.75%</span>
+        <span style="--c:#8fe0aa">50–79점 · 24.7%</span>
         <span style="--c:#e9efeb">80점 이상 · 1.05%</span>
       </div>
-      <div class="callout"><p><b>대부분의 곡이 중간 이하 점수에 몰려 있습니다.</b> 80점 이상은 전체의 1.05%뿐입니다.</p></div>
+      <div class="callout"><p><b>대부분의 곡이 중간 이하 점수에 몰려 있습니다.</b> 80점 이상은 전체의 1.05%뿐이고, 0점인 곡도 14%(16,020행)나 됩니다.</p></div>
     </div>
     <div class="grid" style="grid-template-columns:1fr 1fr 1fr;align-content:start">
       <div class="card"><div class="k">평균</div><div class="big">33.24</div></div>
@@ -261,7 +261,7 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
       </div>
     </div>
     <div class="grid" style="align-content:start">
-      <div class="card"><div class="k">Popularity 행</div><p>히트맵에 넣은 주요 특성과의 상관계수는 모두 |r| ≤ 0.05입니다. <b style="color:var(--text)">Popularity는 단일 특성으로 설명되지 않습니다.</b></p></div>
+      <div class="card"><div class="k">Popularity 행</div><p>모든 Audio Feature와의 상관계수가 |r| &lt; 0.1이고, 가장 큰 값도 instrumentalness의 −0.095입니다. <b style="color:var(--text)">Popularity는 단일 특성으로 설명되지 않습니다.</b></p></div>
       <div class="card"><div class="k">Energy ↔ Loudness</div><div class="big">+0.76</div><p>강한 양의 상관</p></div>
       <div class="card"><div class="k">Energy ↔ Acousticness</div><div class="big" style="color:var(--neg)">−0.73</div><p>강한 음의 상관</p></div>
     </div>
@@ -318,7 +318,7 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
       <div class="kpi"><small>평균 인기도</small><b>33.24</b><code>AVG([popularity])</code></div>
       <div class="kpi"><small>평균 Danceability</small><b>0.57</b><code>AVG([danceability])</code></div>
       <div class="kpi"><small>평균 Energy</small><b>0.64</b><code>AVG([energy])</code></div>
-      <div class="kpi"><small>고유 Track 수</small><b>89,741</b><code>COUNTD([track_id])</code></div>
+      <div class="kpi"><small>고유 Track 수</small><b>89,740</b><code>COUNTD([track_id])</code></div>
     </div>
     <div class="chart-card">
       <div class="chart-title"><h3>장르별 평균 인기도 TOP 10</h3><small>track_genre × AVG(popularity)</small></div>
@@ -345,7 +345,7 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
   </div>
 
   <div class="callout">
-    <p><b>왜 COUNTD였나</b> — 같은 track_id가 여러 장르 행에 등장합니다. 행 수를 그대로 쓰면 트랙 수가 114,000으로 <b>27% 부풀려집니다</b>. COUNT 기반 KPI를 그대로 내보냈다면 대시보드 첫 줄부터 틀린 숫자가 나갔을 것입니다.</p>
+    <p><b>왜 COUNTD였나</b> — 같은 track_id가 여러 장르 행에 등장합니다. 행 수를 그대로 쓰면 트랙 수가 113,999로 <b>27% 부풀려집니다</b>. COUNT 기반 KPI를 그대로 내보냈다면 대시보드 첫 줄부터 틀린 숫자가 나갔을 것입니다.</p>
   </div>
 </div></section>
 
@@ -359,7 +359,7 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
   <div class="grid g2">
     <div class="card"><div class="k">Finding 01</div><h3>Popularity는 중간 이하에 몰려 있다</h3><p>평균 33.24, 중앙값 35이며 전곡의 74.2%가 0~49점 구간에 있습니다. 80점 이상은 1.05%뿐입니다.</p></div>
     <div class="card"><div class="k">Finding 02</div><h3>장르별 차이가 뚜렷하다</h3><p>pop-film(59.28)과 k-pop(56.95)은 전체 평균보다 23점 이상 높고, TOP 10의 마지막도 47점대를 유지합니다.</p></div>
-    <div class="card"><div class="k">Finding 03</div><h3>단일 특성과는 약하게 연결된다</h3><p>히트맵의 주요 Audio Feature와 Popularity 사이 상관계수는 모두 |r| ≤ 0.05이고, 산점도 추세선도 거의 수평입니다. 인기에는 음악 특성 밖의 요인이 함께 작용합니다.</p></div>
+    <div class="card"><div class="k">Finding 03</div><h3>단일 특성과는 약하게 연결된다</h3><p>모든 Audio Feature와 Popularity의 상관계수가 |r| &lt; 0.1(최대 instrumentalness −0.095)이고, 산점도 추세선도 거의 수평입니다. 인기에는 음악 특성 밖의 요인이 함께 작용합니다.</p></div>
     <div class="card"><div class="k">Finding 04</div><h3>집계 수준이 보이는 패턴을 바꾼다</h3><p>곡 단위 산점도는 넓은 점구름이라 패턴을 읽기 어렵지만, 장르 단위로 평균을 내면 Danceability × Energy 평면에 뚜렷한 군집이 드러납니다.</p></div>
   </div>
   <div class="conclusion">Popularity는 장르와 Audio Feature를, 그것도 알맞은 집계 수준에서 함께 보아야 설명된다.</div>
@@ -389,9 +389,11 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
   <div class="grid g2" style="margin-top:32px">
     <div class="card"><div class="k">한계</div>
       <ul class="clean">
-        <li>장르마다 1,000곡씩 뽑은 표본이라 Spotify 전체 카탈로그를 대표하지 않습니다.</li>
+        <li>장르마다 1,000행씩 뽑은 표본이라 Spotify 전체 카탈로그를 대표하지 않습니다.</li>
         <li>Popularity는 수집 시점의 스냅샷이며 최근 재생에 가중된 값입니다.</li>
         <li>상관 분석은 Pearson 계수만 사용해 비선형 관계는 확인하지 않았습니다.</li>
+        <li>평균 KPI는 행 기준이라 여러 장르에 등록된 곡이 중복 반영됩니다. 곡 기준으로 다시 계산하면 33.20 · 0.56 · 0.63입니다.</li>
+        <li>완전 중복 450행은 남겨 두었습니다. 제거해도 평균 인기도는 33.32로, TOP 10은 9·10위(pop ↔ sertanejo)만 바뀝니다.</li>
       </ul>
     </div>
     <div class="card hl"><div class="k">Next Step</div>
