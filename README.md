@@ -1,0 +1,7 @@
+# Spotify 음악 데이터 BI 시각화 포트폴리오
+
+Kaggle **Spotify Tracks Dataset**(114,000행 · 114개 장르)을 Python EDA로 검증하고 Tableau 대시보드로 시각화한 프로젝트입니다.
+
+- 🔗 포트폴리오 페이지: GitHub Pages 배포 후 링크 추가
+- 도구: Python(pandas), Tableau
+- 핵심: KPI 정의(AVG · COUNTD), KPI → 순위 → 관계 3단 대시보드 설계, 집계 수준에 따른 해석 차이

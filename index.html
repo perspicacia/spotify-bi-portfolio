@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spotify 음악 데이터 BI 포트폴리오</title>
+<meta name="description" content="Spotify Tracks Dataset(114K곡)을 Python EDA와 Tableau 대시보드로 분석한 BI 시각화 프로젝트">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0d0c; --bg2:#121614; --card:#171c19; --line:#25302a;
+  --text:#e9efeb; --muted:#9aa8a0; --dim:#6b7871;
+  --green:#1DB954; --green2:#1ed760; --neg:#e9785b;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--green2)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+@media (max-width:600px){.wrap{padding:0 16px}}
+
+/* nav */
+nav{position:sticky;top:0;z-index:10;background:rgba(11,13,12,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:24px;height:56px;overflow-x:auto;scrollbar-width:none}
+nav .wrap::-webkit-scrollbar{display:none}
+nav .brand{font-weight:900;white-space:nowrap;display:flex;align-items:center;gap:8px}
+nav .brand i{width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block}
+nav a.l{color:var(--muted);text-decoration:none;font-size:14px;white-space:nowrap}
+nav a.l:hover{color:var(--text)}
+
+/* hero */
+.hero{padding:96px 0 72px;border-bottom:1px solid var(--line);background:radial-gradient(900px 400px at 85% 0%,rgba(29,185,84,.18),transparent 70%)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--green);text-transform:uppercase}
+.hero h1{font-size:clamp(40px,7vw,76px);line-height:1.08;font-weight:900;margin:16px 0 20px;letter-spacing:-.02em}
+.hero h1 span{color:var(--green)}
+.hero p.lead{color:var(--muted);font-size:18px;max-width:640px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.tag{border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:56px}
+.stats div{background:var(--bg2);padding:22px}
+.stats b{display:block;font-size:30px;font-weight:900;color:var(--green)}
+.stats small{color:var(--muted);font-size:13px}
+@media (max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* sections */
+section{padding:88px 0;border-bottom:1px solid var(--line)}
+.sec-head{margin-bottom:40px}
+.sec-head .num{font-family:var(--mono);color:var(--green);font-size:13px;letter-spacing:.1em}
+.sec-head h2{font-size:clamp(26px,4vw,38px);font-weight:900;margin:8px 0 12px;line-height:1.25;letter-spacing:-.01em}
+.sec-head p{color:var(--muted);max-width:720px}
+h3{font-size:20px;font-weight:700;margin-bottom:8px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:860px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;min-width:0}
+.card .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--green);text-transform:uppercase;margin-bottom:10px}
+.card p{color:var(--muted);font-size:15px}
+.card.hl{border-color:rgba(29,185,84,.5);background:linear-gradient(180deg,rgba(29,185,84,.08),var(--card))}
+.big{font-size:34px;font-weight:900;line-height:1.1;margin:4px 0 6px}
+code,.mono{font-family:var(--mono);font-size:.88em;color:var(--green2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chips span{font-family:var(--mono);font-size:12px;background:var(--bg2);border:1px solid var(--line);padding:3px 8px;border-radius:6px;color:var(--muted)}
+
+/* questions */
+ol.qs{list-style:none;counter-reset:q;display:grid;gap:10px}
+ol.qs li{counter-increment:q;display:flex;gap:14px;align-items:baseline;padding:14px 18px;background:var(--bg2);border:1px solid var(--line);border-radius:10px}
+ol.qs li::before{content:counter(q,decimal-leading-zero);font-family:var(--mono);color:var(--green);font-size:13px}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;counter-reset:s}
+.pipe div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;position:relative}
+.pipe div::before{counter-increment:s;content:counter(s);font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--green);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;margin-bottom:10px}
+.pipe b{display:block;font-size:15px}
+.pipe small{color:var(--muted);font-size:13px}
+@media (max-width:860px){.pipe{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:500px){.pipe{grid-template-columns:repeat(2,1fr)}}
+
+/* charts */
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;min-width:0}
+.chart-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.chart-title h3{margin:0}
+.chart-title small{color:var(--dim);font-family:var(--mono);font-size:12px}
+.split{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+@media (max-width:860px){.split{grid-template-columns:1fr}}
+
+.bars{display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:84px 1fr 52px;align-items:center;gap:10px;font-size:14px}
+.bar .n{color:var(--muted);text-align:right;white-space:nowrap}
+.bar .t{height:22px;background:var(--bg2);border-radius:4px;position:relative}
+.bar .f{height:100%;border-radius:4px;background:var(--green)}
+.bar .v{font-family:var(--mono);font-size:13px}
+.bar .t .base{position:absolute;top:-4px;bottom:-4px;width:0;border-left:1.5px dashed #c9d3cd}
+.bars-note{font-size:12px;color:var(--dim);margin-top:12px;display:flex;align-items:center;gap:6px}
+.bars-note i{display:inline-block;width:0;height:12px;border-left:1.5px dashed #c9d3cd}
+
+.dist{display:flex;height:44px;border-radius:8px;overflow:hidden;margin:8px 0 14px}
+.dist div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:#06130b;font-weight:500;white-space:nowrap;overflow:hidden}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c)}
+
+.heat{width:100%;border-collapse:separate;border-spacing:3px;font-family:var(--mono);font-size:12px}
+.heat th{color:var(--muted);font-weight:500;padding:4px;text-align:center}
+.heat th.r{text-align:right;padding-right:8px;white-space:nowrap}
+.heat td{text-align:center;padding:9px 2px;border-radius:4px;min-width:38px}
+.scroll-x{overflow-x:auto}
+
+figure{margin:0}
+figure img{width:100%;height:auto;display:block;border-radius:10px;background:#fff}
+figcaption{color:var(--muted);font-size:14px;margin-top:14px}
+figcaption b{color:var(--text)}
+
+/* dashboard mock */
+.dash{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:24px}
+.dash .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media (max-width:700px){.dash .kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.kpi small{color:var(--muted);font-size:12px}
+.kpi b{display:block;font-size:28px;font-weight:900;color:var(--green)}
+.kpi code{font-size:11px;color:var(--dim)}
+
+.callout{border-left:3px solid var(--green);background:var(--bg2);padding:18px 22px;border-radius:0 10px 10px 0;margin-top:20px}
+.callout p{color:var(--muted)}
+.callout b{color:var(--text)}
+.callout.warn{border-color:var(--neg)}
+.conclusion{font-size:clamp(20px,3vw,26px);font-weight:700;line-height:1.5;margin-top:32px;padding:28px;border-radius:14px;background:linear-gradient(120deg,rgba(29,185,84,.16),rgba(29,185,84,.02));border:1px solid rgba(29,185,84,.35)}
+ul.clean{list-style:none;display:grid;gap:8px}
+ul.clean li{padding-left:18px;position:relative;color:var(--muted);font-size:15px}
+ul.clean li::before{content:"";position:absolute;left:0;top:.7em;width:7px;height:7px;border-radius:50%;background:var(--green)}
+footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <span class="brand"><i></i>Spotify BI</span>
+  <a class="l" href="#purpose">목적</a>
+  <a class="l" href="#data">데이터</a>
+  <a class="l" href="#eda">EDA</a>
+  <a class="l" href="#dashboard">대시보드</a>
+  <a class="l" href="#findings">분석</a>
+  <a class="l" href="#conclusion">결론</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Spotify · Kaggle Dataset Analysis</div>
+  <h1>음악 데이터로<br>읽는 <span>트렌드</span></h1>
+  <p class="lead">114,000곡, 114개 장르, 10가지가 넘는 오디오 특성을 Python EDA로 검증하고 Tableau 대시보드 한 장에 담았습니다.</p>
+  <div class="tags">
+    <span class="tag">Python · pandas</span><span class="tag">Tableau</span><span class="tag">KPI 설계</span><span class="tag">EDA</span><span class="tag">Data Visualization</span>
+  </div>
+  <div class="stats">
+    <div><b>114K</b><small>tracks (rows)</small></div>
+    <div><b>89,741</b><small>고유 track_id</small></div>
+    <div><b>114</b><small>genres</small></div>
+    <div><b>8 + 1</b><small>sheets + dashboard</small></div>
+  </div>
+</div></header>
+
+<!-- 01 -->
+<section id="purpose"><div class="wrap">
+  <div class="sec-head">
+    <div class="num">01 · REQUIREMENTS &amp; PURPOSE</div>
+    <h2>“어떤 음악이 사랑받는가”를<br>한 화면에서 답하게 한다</h2>
+    <p>11만 곡의 메타데이터와 오디오 특성을 Python으로 탐색하고, 지표를 정의한 다음 Tableau 대시보드로 옮기는 흐름으로 설계했습니다.</p>
+  </div>
+  <div class="grid g3">
+    <div class="card"><div class="k">Goal 01 · Explore</div><h3>분포와 품질을 먼저 확인</h3><p>Popularity의 분포와 결측·중복 여부를 Python으로 검증한 다음 대시보드에 올립니다.</p></div>
+    <div class="card"><div class="k">Goal 02 · Measure</div><h3>비교 가능한 지표 체계 정의</h3><p>평균 인기도, 평균 Danceability, 평균 Energy, 고유 Track 수를 핵심 KPI로 고정해 모든 시트가 같은 기준을 쓰게 했습니다.</p></div>
+    <div class="card"><div class="k">Goal 03 · Deliver</div><h3>누구나 읽는 대시보드</h3><p>KPI, 순위, 관계 순서로 시선이 흐르도록 배치해 한 장 안에서 결론까지 읽히게 했습니다.</p></div>
+  </div>
+  <h3 style="margin:40px 0 14px">Dashboard Questions</h3>
+  <ol class="qs">
+    <li>전체 데이터셋의 평균 수준은 어디인가?</li>
+    <li>평균 인기가 높은 장르 TOP 10은 무엇인가?</li>
+    <li>Danceability가 높으면 정말 인기가 높은가?</li>
+    <li>장르는 Danceability × Energy 평면에서 어떻게 갈라지는가?</li>
+    <li>이 결과를 추천과 큐레이션에 어떻게 연결할 수 있는가?</li>
+  </ol>
+</div></section>
+
+<!-- 02 -->
+<section id="data"><div class="wrap">
+  <div class="sec-head">
+    <div class="num">02 · DATA COLLECTION &amp; PREPROCESSING</div>
+    <h2>Kaggle 공개 데이터셋 하나로<br>트랙 정보를 한 번에 수집</h2>
+    <p>출처는 Kaggle의 “Spotify Tracks Dataset”입니다. API 호출이나 크롤링 없이 CSV 한 파일을 Python과 Tableau의 공통 소스로 썼습니다.</p>
+  </div>
+  <div class="grid g4">
+    <div class="card"><div class="k">Rows</div><div class="big">114,000</div><p>수집 시점 총 트랙 행 수</p></div>
+    <div class="card"><div class="k">Columns</div><div class="big">22</div><p>메타 10개 + Audio Feature 12개</p></div>
+    <div class="card"><div class="k">Genres</div><div class="big">114</div><p>장르별 1,000곡 · 대시보드의 기준 차원</p></div>
+    <div class="card"><div class="k">Audio Features</div><div class="big">12</div><p>Spotify가 제공한 수치형 특성</p></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="card"><div class="k">곡 정보 · 메타</div><div class="chips"><span>track_id</span><span>artists</span><span>album_name</span><span>track_name</span><span>popularity</span><span>duration_ms</span><span>explicit</span></div></div>
+    <div class="card"><div class="k">Audio Features</div>
+      <p style="font-size:13px;margin-bottom:6px">0~1 스케일</p>
+      <div class="chips"><span>danceability</span><span>energy</span><span>valence</span><span>acousticness</span><span>speechiness</span><span>instrumentalness</span><span>liveness</span></div>
+      <p style="font-size:13px;margin:12px 0 6px">고유 단위</p>
+      <div class="chips"><span>loudness (dB)</span><span>tempo (BPM)</span><span>key</span><span>mode</span><span>time_signature</span></div>
+    </div>
+    <div class="card"><div class="k">Genre Label</div><div class="chips"><span>track_genre</span></div><p style="margin-top:10px">114개 장르 라벨은 대시보드의 유일한 차원 축입니다. 한 곡이 여러 장르에 중복 등록될 수 있어 고유 Track 수는 따로 세야 합니다.</p></div>
+  </div>
+
+  <h3 style="margin:48px 0 16px">전처리 파이프라인</h3>
+  <div class="pipe">
+    <div><b>Raw Data</b><small>114,000행 · 22컬럼</small></div>
+    <div><b>결측치 제거</b><small>1행 (3개 필드) 제거</small></div>
+    <div><b>컬럼 정리</b><small>인덱스성 2개 제거</small></div>
+    <div><b>중복 확인</b><small>장르 간 중복 등록 24,259행</small></div>
+    <div><b>Python EDA</b><small>분포 · 장르 · 상관관계</small></div>
+    <div><b>Tableau 연결</b><small>KPI · 시트 · 대시보드</small></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card hl"><div class="k">Checkpoint</div><h3>113,999행 · 20개 컬럼 유지</h3><p>데이터 손실은 아주 작았고, 장르 라벨과 Audio Feature 컬럼은 모두 그대로 남겼습니다.</p></div>
+    <div class="card"><div class="k">BI 관점 · 행 수 ≠ 곡 수</div><h3>고유 track_id는 89,741개</h3><p>한 곡이 여러 장르에 등록되어 있어 114,000행 가운데 24,259행이 중복입니다. 이 차이를 KPI 정의 단계에서 먼저 잡아야 “트랙 수”가 부풀지 않습니다.</p></div>
+  </div>
+</div></section>
+
+<!-- 03 -->
+<section id="eda"><div class="wrap">
+  <div class="sec-head">
+    <div class="num">03 · EXPLORATORY ANALYSIS · PYTHON</div>
+    <h2>대시보드에 올리기 전에<br>Python으로 먼저 확인한 것들</h2>
+  </div>
+
+  <div class="split">
+    <div class="chart-card">
+      <div class="chart-title"><h3>Popularity 분포</h3><small>0 – 100 점</small></div>
+      <div class="dist">
+        <div style="width:74.2%;background:#1DB954">0–49 · 74.2%</div>
+        <div style="width:24.75%;background:#8fe0aa">50–79</div>
+        <div style="width:1.05%;background:#e9efeb"></div>
+      </div>
+      <div class="legend">
+        <span style="--c:#1DB954">0–49점 · 74.2%</span>
+        <span style="--c:#8fe0aa">50–79점 · 24.75%</span>
+        <span style="--c:#e9efeb">80점 이상 · 1.05%</span>
+      </div>
+      <div class="callout"><p><b>대부분의 곡이 중간 이하 점수에 몰려 있습니다.</b> 80점 이상은 전체의 1.05%뿐입니다.</p></div>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr 1fr;align-content:start">
+      <div class="card"><div class="k">평균</div><div class="big">33.24</div></div>
+      <div class="card"><div class="k">중앙값</div><div class="big">35</div></div>
+      <div class="card"><div class="k">최댓값</div><div class="big">100</div></div>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:16px">
+    <div class="chart-card">
+      <div class="chart-title"><h3>Audio Feature 상관관계</h3><small>Pearson r</small></div>
+      <div class="scroll-x"><table class="heat" id="heat"></table></div>
+      <div class="legend" style="margin-top:12px">
+        <span style="--c:#1DB954">양의 상관</span><span style="--c:#e9785b">음의 상관</span><span style="--c:#25302a">0에 가까움</span>
+      </div>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card"><div class="k">Popularity 행</div><p>히트맵에 넣은 주요 특성과의 상관계수는 모두 |r| ≤ 0.05입니다. <b style="color:var(--text)">Popularity는 단일 특성으로 설명되지 않습니다.</b></p></div>
+      <div class="card"><div class="k">Energy ↔ Loudness</div><div class="big">+0.76</div><p>강한 양의 상관</p></div>
+      <div class="card"><div class="k">Energy ↔ Acousticness</div><div class="big" style="color:var(--neg)">−0.73</div><p>강한 음의 상관</p></div>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:16px">
+    <div class="chart-card">
+      <div class="chart-title"><h3>상위 5 장르 · Danceability × Energy</h3><small>장르 평균</small></div>
+      <svg viewBox="0 0 440 300" width="100%" role="img" aria-label="상위 5개 장르의 Danceability와 Energy 산점도" style="font-family:'Noto Sans KR',sans-serif">
+        <g stroke="#25302a" stroke-width="1">
+          <line x1="50" y1="30" x2="50" y2="260"/><line x1="50" y1="260" x2="380" y2="260"/>
+          <line x1="50" y1="155.5" x2="380" y2="155.5" stroke-dasharray="3 4"/><line x1="238.6" y1="30" x2="238.6" y2="260" stroke-dasharray="3 4"/>
+        </g>
+        <g fill="#6b7871" font-size="10" font-family="JetBrains Mono,monospace">
+          <text x="44" y="34" text-anchor="end">0.90</text><text x="44" y="263" text-anchor="end">0.35</text>
+          <text x="50" y="276" text-anchor="middle">0.40</text><text x="380" y="276" text-anchor="middle">0.75</text>
+        </g>
+        <g fill="#9aa8a0" font-size="11">
+          <text x="215" y="294" text-anchor="middle">Danceability →</text>
+          <text x="16" y="145" text-anchor="middle" transform="rotate(-90 16 145)">Energy →</text>
+        </g>
+        <g fill="#1DB954" stroke="#0b0d0c" stroke-width="2">
+          <circle cx="106.6" cy="71.8" r="8"/><circle cx="285.7" cy="122" r="8"/><circle cx="238.6" cy="155.5" r="8"/><circle cx="295.1" cy="226.5" r="8"/><circle cx="323.4" cy="214" r="8"/>
+        </g>
+        <g fill="#e9efeb" font-size="12" font-weight="700">
+          <text x="120" y="68">grunge</text><text x="298" y="118">k-pop</text><text x="252" y="160">pop-film</text>
+          <text x="281" y="225" text-anchor="end">chill</text><text x="336" y="210">sad</text>
+        </g>
+        <g fill="#9aa8a0" font-size="10" font-family="JetBrains Mono,monospace">
+          <text x="120" y="82">0.46 · 0.80</text><text x="298" y="132">0.65 · 0.68</text><text x="252" y="173">0.60 · 0.60</text>
+          <text x="281" y="238" text-anchor="end">0.66 · 0.43</text><text x="336" y="223">0.69 · 0.46</text>
+        </g>
+      </svg>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card"><div class="k">춤추기 쉬운 정도</div><p>의외로 무드 계열인 sad(0.69)와 chill(0.66)이 가장 높고, grunge(0.46)가 가장 낮습니다.</p></div>
+      <div class="card"><div class="k">활동성 · 강도</div><p>grunge가 0.80으로 압도적이고, chill(0.43)과 sad(0.46)은 그 절반 수준입니다.</p></div>
+      <div class="card hl"><div class="k">두 축을 함께 보면</div><p>chill·sad는 “높은 Danceability + 낮은 Energy”, grunge는 그 반대입니다. 같은 인기 상위권 안에서도 성격이 완전히 갈립니다.</p></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- 04 -->
+<section id="dashboard"><div class="wrap">
+  <div class="sec-head">
+    <div class="num">04 · TABLEAU DASHBOARD</div>
+    <h2>분석 결과를<br>“누구나 5초 안에 읽는 화면”으로</h2>
+    <p>Python으로 검증한 질문들을 KPI, 순위, 관계의 3단 구조로 재배치하고 워크시트 8개를 대시보드 1장(1366 × 868 고정)으로 묶었습니다.</p>
+  </div>
+
+  <div class="dash">
+    <div style="margin-bottom:18px"><b style="font-size:18px">Spotify Music Popularity Dashboard</b><br><small style="color:var(--muted)">인기 있는 음악은 어떤 특징을 가지고 있을까?</small></div>
+    <div class="kpis">
+      <div class="kpi"><small>평균 인기도</small><b>33.24</b><code>AVG([popularity])</code></div>
+      <div class="kpi"><small>평균 Danceability</small><b>0.57</b><code>AVG([danceability])</code></div>
+      <div class="kpi"><small>평균 Energy</small><b>0.64</b><code>AVG([energy])</code></div>
+      <div class="kpi"><small>고유 Track 수</small><b>89,741</b><code>COUNTD([track_id])</code></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title"><h3>장르별 평균 인기도 TOP 10</h3><small>track_genre × AVG(popularity)</small></div>
+      <div class="bars" id="top10"></div>
+      <div class="bars-note"><i></i> 전체 평균 33.24 · 1위와 10위의 차이 11.7점</div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <figure class="chart-card">
+        <img src="assets/scatter-track-level.jpg" alt="Tableau 산점도: 곡 단위 Danceability 대 Popularity, 추세선이 거의 수평" loading="lazy">
+        <figcaption><b>Sheet 02 · 곡 단위 Danceability × Popularity</b><br>점구름이 세로로 넓게 퍼져 추세선이 거의 수평입니다. 상관계수 +0.04로, Danceability 하나로는 인기를 예측할 수 없습니다.</figcaption>
+      </figure>
+      <figure class="chart-card">
+        <img src="assets/scatter-genre-level.jpg" alt="Tableau 산점도: 장르 단위 Danceability 대 Energy, 고에너지 장르와 저에너지 장르가 갈림" loading="lazy">
+        <figcaption><b>Sheet 03 · 장르 단위 Danceability × Energy</b><br>고에너지 군(grindcore · death-metal · hardstyle)과 저에너지 군(sleep · classical · ambient)이 뚜렷하게 갈립니다. 큐레이션 축으로 바로 쓸 수 있는 구조입니다.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:32px">
+    <div class="card"><div class="k">Layer 01 · KPI</div><h3>전체 수준을 먼저 고정</h3><p>모든 하위 시트가 이 기준선과 비교되도록 화면 맨 위에 두었습니다. 트랙 수는 행 수가 아니라 <code>COUNTD</code>로 세어 중복 집계를 막았습니다.</p></div>
+    <div class="card"><div class="k">Layer 02 · 순위</div><h3>Top N 필터 + 가로 막대</h3><p>114개 장르를 다 나열하지 않고 상위 10개만 남겼습니다. 장르명이 길어 가로 막대를 쓰고, 값 레이블을 붙여 축을 읽지 않아도 되게 했습니다.</p></div>
+    <div class="card"><div class="k">Layer 03 · 관계</div><h3>두 개의 산점도로 근거 제시</h3><p>곡 단위 Danceability × Popularity(추세선)로 “약한 상관”을, 장르 단위 Danceability × Energy로 “장르 간 뚜렷한 차이”를 보여 줍니다.</p></div>
+    <div class="card"><div class="k">Design Rule</div><h3>초록 단일 팔레트</h3><p>색은 <code>#1DB954</code> 하나만 쓰고 강조는 채도와 크기로만 했습니다. 범례가 필요 없고, 흑백 인쇄나 색각 이상 사용자에게도 순위가 그대로 전달됩니다.</p></div>
+  </div>
+
+  <div class="callout">
+    <p><b>왜 COUNTD였나</b> — 같은 track_id가 여러 장르 행에 등장합니다. 행 수를 그대로 쓰면 트랙 수가 114,000으로 <b>27% 부풀려집니다</b>. COUNT 기반 KPI를 그대로 내보냈다면 대시보드 첫 줄부터 틀린 숫자가 나갔을 것입니다.</p>
+  </div>
+</div></section>
+
+<!-- 05 -->
+<section id="findings"><div class="wrap">
+  <div class="sec-head">
+    <div class="num">05 · ANALYSIS</div>
+    <h2>대시보드를 위에서 아래로 읽으면</h2>
+    <p>단일 지표보다 분포, 장르, 특성 사이 관계를 함께 해석할 때 설명력이 높아집니다.</p>
+  </div>
+  <div class="grid g2">
+    <div class="card"><div class="k">Finding 01</div><h3>Popularity는 중간 이하에 몰려 있다</h3><p>평균 33.24, 중앙값 35이며 전곡의 74.2%가 0~49점 구간에 있습니다. 80점 이상은 1.05%뿐입니다.</p></div>
+    <div class="card"><div class="k">Finding 02</div><h3>장르별 차이가 뚜렷하다</h3><p>pop-film(59.28)과 k-pop(56.95)은 전체 평균보다 23점 이상 높고, TOP 10의 마지막도 47점대를 유지합니다.</p></div>
+    <div class="card"><div class="k">Finding 03</div><h3>단일 특성과는 약하게 연결된다</h3><p>히트맵의 주요 Audio Feature와 Popularity 사이 상관계수는 모두 |r| ≤ 0.05이고, 산점도 추세선도 거의 수평입니다. 인기에는 음악 특성 밖의 요인이 함께 작용합니다.</p></div>
+    <div class="card"><div class="k">Finding 04</div><h3>집계 수준이 보이는 패턴을 바꾼다</h3><p>곡 단위 산점도는 넓은 점구름이라 패턴을 읽기 어렵지만, 장르 단위로 평균을 내면 Danceability × Energy 평면에 뚜렷한 군집이 드러납니다.</p></div>
+  </div>
+  <div class="conclusion">Popularity는 장르와 Audio Feature를, 그것도 알맞은 집계 수준에서 함께 보아야 설명된다.</div>
+</div></section>
+
+<!-- 06 -->
+<section id="conclusion"><div class="wrap">
+  <div class="sec-head">
+    <div class="num">06 · CONCLUSION &amp; INSIGHTS</div>
+    <h2>데이터를 옳게 세고 옳게 배치하면<br>화면이 결론을 말한다</h2>
+    <p>Audio Feature만으로는 인기를 충분히 설명할 수 없습니다. 추천 시스템은 음악 특성과 사용자 행동 정보를 함께 반영해야 합니다.</p>
+  </div>
+  <div class="grid g3">
+    <div class="card"><div class="k">Conclusion 01 · 분석</div><h3>단일 특성으로 인기는 설명되지 않는다</h3><p>장르와 맥락을 함께 봐야 합니다.</p></div>
+    <div class="card"><div class="k">Conclusion 02 · 시각화</div><h3>집계 기준을 잘못 잡으면 대시보드가 거짓말한다</h3><p>COUNTD를 쓰지 않으면 트랙 수가 27% 부풀려집니다. 정의가 곧 신뢰입니다.</p></div>
+    <div class="card"><div class="k">Conclusion 03 · 확장</div><h3>추천에는 사용자 데이터가 필요하다</h3><p>아티스트, 발매 시점, 청취 이력, 개인 취향이 인기 점수를 보완합니다.</p></div>
+  </div>
+
+  <h3 style="margin:48px 0 16px">이 프로젝트에서 보여 준 역량</h3>
+  <div class="grid g4">
+    <div class="card"><div class="k">01</div><h3>지표 정의</h3><p>AVG와 COUNTD를 고른 근거와 표기 규칙을 문서화</p></div>
+    <div class="card"><div class="k">02</div><h3>차트 선택</h3><p>가로 막대, 산점도, Top N 필터를 고른 이유를 설명</p></div>
+    <div class="card"><div class="k">03</div><h3>화면 설계</h3><p>KPI → 순위 → 관계 3단 구조로 읽는 순서를 통제</p></div>
+    <div class="card"><div class="k">04</div><h3>데이터 검증</h3><p>Python EDA로 검증한 값만 대시보드에 노출</p></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:32px">
+    <div class="card"><div class="k">한계</div>
+      <ul class="clean">
+        <li>장르마다 1,000곡씩 뽑은 표본이라 Spotify 전체 카탈로그를 대표하지 않습니다.</li>
+        <li>Popularity는 수집 시점의 스냅샷이며 최근 재생에 가중된 값입니다.</li>
+        <li>상관 분석은 Pearson 계수만 사용해 비선형 관계는 확인하지 않았습니다.</li>
+      </ul>
+    </div>
+    <div class="card hl"><div class="k">Next Step</div>
+      <ul class="clean">
+        <li>청취 로그를 붙여 실제 재생 행동 기반 KPI로 대시보드 확장</li>
+        <li>평균 KPI도 곡 단위(<code>{FIXED [track_id]}</code>)로 계산해 중복 가중 제거</li>
+        <li>아티스트·발매 시점을 더한 다변량 모델로 설명력 비교</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  Data: <a href="https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset" target="_blank" rel="noopener">Spotify Tracks Dataset (Kaggle)</a> · Tools: Python, pandas, Tableau · BI Visualization Portfolio
+</div></footer>
+
+<script>
+// TOP 10 bars
+const top10=[["pop-film",59.28],["k-pop",56.95],["chill",53.65],["sad",52.38],["grunge",49.59],["indian",49.54],["anime",48.77],["emo",48.13],["sertanejo",47.87],["pop",47.58]];
+const max=60, avg=33.24;
+document.getElementById('top10').innerHTML=top10.map(([g,v],i)=>
+  `<div class="bar"><span class="n">${g}</span><span class="t"><span class="f" style="display:block;width:${v/max*100}%;opacity:${1-i*0.055}"></span><span class="base" style="left:${avg/max*100}%"></span></span><span class="v">${v.toFixed(2)}</span></div>`).join('');
+
+// correlation heatmap
+const cols=["pop","dance","energy","loud","acou","valen","tempo"];
+const rows=[["popularity",[1,.04,0,.05,-.03,-.04,.01]],["danceability",[.04,1,.13,.26,-.17,.48,-.05]],["energy",[0,.13,1,.76,-.73,.26,.25]],["loudness",[.05,.26,.76,1,-.59,.28,.21]],["acousticness",[-.03,-.17,-.73,-.59,1,-.11,-.21]]];
+const cell=v=>{const a=Math.min(Math.abs(v),1);const c=v>=0?'29,185,84':'233,120,91';const bg=a<0.06?'#1b221e':`rgba(${c},${0.15+a*0.85})`;const fg=a>0.55?'#06130b':'#e9efeb';return `<td style="background:${bg};color:${fg}">${v.toFixed(2)}</td>`};
+document.getElementById('heat').innerHTML='<tr><th></th>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr>'+rows.map(([n,vs])=>`<tr><th class="r">${n}</th>${vs.map(cell).join('')}</tr>`).join('');
+</script>
+</body>
+</html>
