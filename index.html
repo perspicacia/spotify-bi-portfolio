@@ -136,6 +136,9 @@ figcaption b{color:var(--text)}
 ul.clean{list-style:none;display:grid;gap:8px}
 ul.clean li{padding-left:18px;position:relative;color:var(--muted);font-size:15px}
 ul.clean li::before{content:"";position:absolute;left:0;top:.7em;width:7px;height:7px;border-radius:50%;background:var(--green)}
+.lang{margin-left:auto;display:flex;gap:12px;white-space:nowrap}
+.lang a{color:var(--muted);text-decoration:none;font-size:13px}
+.lang a.on{color:var(--text);font-weight:700}
 footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
 </style>
 </head>
@@ -149,6 +152,7 @@ footer{padding:48px 0 64px;color:var(--dim);font-size:13px}
   <a class="l" href="#dashboard">대시보드</a>
   <a class="l" href="#findings">분석</a>
   <a class="l" href="#conclusion">결론</a>
+  <span class="lang"><a href="./" class="on" aria-current="page">한국어</a><a href="en/">English</a></span>
 </div></nav>
 
 <header class="hero"><div class="wrap">
